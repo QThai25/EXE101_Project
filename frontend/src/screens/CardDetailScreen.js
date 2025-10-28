@@ -12,6 +12,7 @@ import { useAuth } from "../auth/AuthContext";
 import api from "../api/axiosInstance";
 import Toast from "react-native-toast-message";
 import * as Speech from "expo-speech";
+import { Audio } from "expo-av";
 
 const CardDetailScreen = ({ route }) => {
   const { card } = route.params;
@@ -19,6 +20,7 @@ const CardDetailScreen = ({ route }) => {
   const [quiz, setQuiz] = useState(null);
   const [showAnswer, setShowAnswer] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [sound, setSound] = useState(null);
 
   // 🧠 Fetch quiz theo cardId
   useEffect(() => {
@@ -50,13 +52,12 @@ const CardDetailScreen = ({ route }) => {
       );
   };
 
-  // 🔊 Đọc văn bản bằng giọng nói
-  const speak = (text) => {
-    Speech.speak(text, {
-      language: "vi-VN",
-      rate: 1.0,
-      pitch: 1.0,
-    });
+  const playVoice = async () => {
+    const { sound } = await Audio.Sound.createAsync(
+      require("../../assets/voice/nha_tran_ton_tai_qua_12_doi_vua_tri_vi_175_nam_8d5d7d66-3fad-4e15-b33e-693d55a52a56.mp3")
+    );
+    setSound(sound);
+    await sound.playAsync();
   };
 
   const imageSource =
@@ -122,8 +123,7 @@ const CardDetailScreen = ({ route }) => {
         {card.description || "Không có mô tả cho thẻ này."}
       </Text>
 
-      {/* 🔹 Extra Info */}
-      <View
+      {/* <View
         style={{
           marginTop: 20,
           backgroundColor: "#fff",
@@ -142,14 +142,9 @@ const CardDetailScreen = ({ route }) => {
             Category: <Text style={{ color: "#007AFF" }}>{card.category}</Text>
           </Text>
         )}
-      </View>
+      </View> */}
 
-      {/* 🧠 Quiz Section */}
       <View style={{ marginTop: 40, width: "90%" }}>
-        <Text style={{ fontSize: 20, fontWeight: "bold", marginBottom: 10 }}>
-          🧠 Câu hỏi thử thách
-        </Text>
-
         {!quiz ? (
           <Text style={{ color: "#999" }}>Không có câu hỏi cho thẻ này.</Text>
         ) : (
@@ -164,13 +159,13 @@ const CardDetailScreen = ({ route }) => {
             }}
           >
             <Text style={{ fontSize: 16, fontWeight: "600", color: "#333" }}>
-              ❓ {quiz.question}
+              {quiz.question}
             </Text>
 
             {showAnswer && (
               <View style={{ marginTop: 15 }}>
                 <Text style={{ fontSize: 16, color: "#555", lineHeight: 22 }}>
-                  💡 {quiz.correctAnswer}
+                  {quiz.correctAnswer}
                 </Text>
                 {quiz.explanation && (
                   <Text
@@ -181,27 +176,11 @@ const CardDetailScreen = ({ route }) => {
                       fontStyle: "italic",
                     }}
                   >
-                    Giải thích: {quiz.explanation}
+                    {quiz.explanation}
                   </Text>
                 )}
                 <View style={{ marginTop: 10 }}>
-                  <Button
-                    title="🔊 Nghe toàn bộ"
-                    onPress={() => {
-                      let textToSpeak = `Đáp án đúng là: ${
-                        quiz.correctAnswer
-                      }. ${
-                        quiz.explanation
-                          ? "Giải thích: " + quiz.explanation
-                          : ""
-                      }`;
-                      Speech.speak(textToSpeak, {
-                        language: "vi-VN",
-                        rate: 1.0,
-                        pitch: 1.0,
-                      });
-                    }}
-                  />
+                  <Button title="🔊 Nghe giọng đọc" onPress={playVoice} />
                 </View>
               </View>
             )}

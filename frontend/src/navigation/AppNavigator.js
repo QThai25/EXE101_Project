@@ -1,48 +1,46 @@
 import React from "react";
+import { View, Text, ActivityIndicator } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { useAuth } from "../auth/AuthContext";
 
-import HomeScreen from "../screens/HomeScreen";
+import HomeScreenMain from "../screens/HomeScreen";
+import MyCollectionScreen from "../screens/MyCollectionScreen";
+import ProfileScreen from "../screens/ProfileScreen";
+import AdminScreen from "../screens/AdminScreen";
+import CardDetailScreen from "../screens/CardDetailScreen";
+import WelcomeScreen from "../screens/WelcomeScreen";
 import LoginScreen from "../screens/LoginScreen";
 import RegisterScreen from "../screens/RegisterScreen";
-import MyCollectionScreen from "../screens/MyCollectionScreen";
-import CardDetailScreen from "../screens/CardDetailScreen";
-import AdminScreen from "../screens/AdminScreen";
-import ProfileScreen from "../screens/ProfileScreen";
-import WelcomeScreen from "../screens/WelcomeScreen";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
+// Tab chính
 const MainTabs = () => {
   const { user } = useAuth();
 
-  const tabs = [
-    { name: "Home", component: HomeScreen },
-    { name: "My Collection", component: MyCollectionScreen },
-    { name: "Profile", component: ProfileScreen },
-    { name: "Admin", component: AdminScreen, adminOnly: true },
-  ];
-
   return (
     <Tab.Navigator>
-      {tabs.map(
-        (tab) =>
-          (!tab.adminOnly || user?.role === "admin") && (
-            <Tab.Screen key={tab.name} name={tab.name} component={tab.component} />
-          )
-      )}
+      <Tab.Screen name="Home" component={HomeScreenMain} />
+      <Tab.Screen name="My Collection" component={MyCollectionScreen} />
+      <Tab.Screen name="Profile" component={ProfileScreen} />
+      {user?.role === "admin" && <Tab.Screen name="Admin" component={AdminScreen} />}
     </Tab.Navigator>
   );
 };
 
-
 const AppNavigator = () => {
   const { user, loading } = useAuth();
 
-  if (loading) return null;
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
 
   return (
     <NavigationContainer>
@@ -55,11 +53,9 @@ const AppNavigator = () => {
           </>
         ) : (
           <>
-            {/* Khi đã đăng nhập → chỉ vào MainTabs */}
             <Stack.Screen name="MainTabs" component={MainTabs} />
           </>
         )}
-
         {/* CardDetail có thể mở từ bất kỳ tab nào */}
         <Stack.Screen
           name="CardDetail"
@@ -70,4 +66,5 @@ const AppNavigator = () => {
     </NavigationContainer>
   );
 };
+
 export default AppNavigator;
